@@ -47,9 +47,9 @@
   },
 
   "pipelines": {
-    "object_recognition": {
-      "name": "Object Recognition Pipeline",
-      "intent": "object_recognition",
+    "question": {
+      "name": "Question Pipeline",
+      "intent": "question",
       "description": "Recognizing the main object or concept depicted in the image",
       "question_intent": "identify_object_or_concept",
       "answer_type": "single_label",

@@ -77,7 +77,7 @@ python generate_vqa/generate_question/main.py input.json output.json --config ge
 ```bash
 # 只使用特定的pipeline
 python generate_vqa/main.py input.json output.json \
-    --pipelines object_recognition object_counting
+    --pipelines question object_counting
 
 # 限制处理样本数（用于测试）
 python generate_vqa/main.py input.json output.json -n 100
@@ -96,6 +96,8 @@ python generate_vqa/main.py input.json output.json \
 {
   "sample_index": 0,
   "id": 123,
+  "pipeline_type": "object_counting",
+  "pipeline_name": "Object Counting Pipeline",
   "source_a": {
     "id": 123,
     "image_base64": "base64编码的图片数据",
@@ -108,6 +110,21 @@ python generate_vqa/main.py input.json output.json \
 
 系统会从`source_a`中提取图片数据。
 
+### Pipeline类型识别
+
+系统支持从输入数据中自动识别pipeline类型：
+
+- **优先使用 `pipeline_type` 字段**：如 `"object_counting"`，直接对应配置文件中的pipeline名称
+- **其次使用 `pipeline_name` 字段**：如 `"Object Counting Pipeline"`，系统会自动映射到对应的pipeline类型
+- **也可以从 `source_a` 或 `source_b` 中查找**：如果记录顶层没有，会尝试从这些字段中查找
+
+**重要**：如果记录中指定了`pipeline_type`或`pipeline_name`，系统会**只为该记录使用对应的pipeline生成问题**，而不是为所有pipeline生成。这样可以：
+- 减少生成的问题数量（从 记录数 × pipeline数 变为 记录数）
+- 利用已有的pipeline类型信息
+- 提高数据质量和相关性
+
+如果记录中没有指定pipeline信息，系统会使用传入的`--pipelines`参数（如果指定了），或者使用所有pipeline（向后兼容）。
+
 ## 输出数据格式
 
 ### 成功结果文件
@@ -116,8 +133,8 @@ python generate_vqa/main.py input.json output.json \
 
 ```json
 {
-  "pipeline_name": "object_recognition",
-  "pipeline_intent": "object_recognition",
+  "pipeline_name": "question",
+  "pipeline_intent": "question",
   "question": "Which term best matches the picture?",
   "question_type": "multiple_choice",
   "answer_type": "single_label",

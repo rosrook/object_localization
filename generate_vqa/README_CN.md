@@ -78,7 +78,7 @@ if pipeline_config.get("object_grounding"):
 **示例**: 
 - `object_proportion` pipeline需要选择对象来计算比例
 - `object_position` pipeline需要选择对象来定位位置
-- `object_recognition` pipeline不需要对象选择（直接识别整个图像）
+- `question` pipeline不需要对象选择（直接识别整个图像）
 
 ### STEP 3: 槽位填充
 
@@ -159,8 +159,8 @@ if pipeline_config.get("object_grounding"):
 **输出格式**:
 ```json
 {
-  "pipeline_name": "object_recognition",
-  "pipeline_intent": "object_recognition",
+  "pipeline_name": "question",
+  "pipeline_intent": "question",
   "question": "Which term best matches the picture?",
   "answer_type": "single_label",
   "slots": {...},
@@ -340,7 +340,7 @@ python generate_vqa/generate_question/main.py input.json output.json
 ```bash
 # 只使用特定的pipeline
 python generate_vqa/generate_question/main.py input.json output.json \
-    --pipelines object_recognition object_counting
+    --pipelines question object_counting
 
 # 限制处理样本数（用于测试）
 python generate_vqa/generate_question/main.py input.json output.json -n 100

@@ -575,7 +575,7 @@ def main():
   
   # 指定pipeline和样本数
   python generate_vqa/pipeline.py input.json output_dir/ \\
-      --pipelines object_recognition object_counting \\
+      --pipelines question object_counting \\
       -n 100
   
   # 不保存中间结果

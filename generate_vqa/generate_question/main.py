@@ -24,7 +24,7 @@ def main():
   python generate_vqa/generate_question/main.py input.json output.json
   
   # 只使用特定的pipeline
-  python generate_vqa/generate_question/main.py input.json output.json --pipelines object_recognition object_counting
+  python generate_vqa/generate_question/main.py input.json output.json --pipelines question object_counting
   
   # 限制处理样本数（用于测试）
   python generate_vqa/generate_question/main.py input.json output.json -n 100

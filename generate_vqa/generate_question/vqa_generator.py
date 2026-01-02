@@ -263,8 +263,25 @@ class VQAGenerator:
                 print(f"[WARNING] 记录 {idx} 无法提取图片，跳过")
                 continue
             
-            # 为每个pipeline生成问题
-            for pipeline_name in pipeline_names:
+            # 确定该记录应该使用的pipeline
+            # 优先从记录中读取pipeline_type或pipeline_name
+            record_pipeline = self._extract_pipeline_from_record(record)
+            
+            # 如果记录中指定了pipeline，使用指定的；否则使用传入的pipeline_names
+            if record_pipeline:
+                pipelines_to_use = [record_pipeline]
+                print(f"[INFO] 记录 {idx} 使用指定的pipeline: {record_pipeline}")
+            else:
+                # 如果记录中没有指定pipeline，使用传入的pipeline_names（如果指定了）
+                # 如果没有传入pipeline_names，则使用所有pipeline（向后兼容）
+                pipelines_to_use = pipeline_names if pipeline_names else self.config_loader.list_pipelines()
+                if not pipeline_names:
+                    print(f"[WARNING] 记录 {idx} 未指定pipeline，且未传入pipeline_names，将使用所有pipeline: {pipelines_to_use}")
+                else:
+                    print(f"[INFO] 记录 {idx} 未指定pipeline，使用传入的pipeline_names: {pipelines_to_use}")
+            
+            # 为确定的pipeline生成问题
+            for pipeline_name in pipelines_to_use:
                 total_processed += 1
                 
                 result, error_info = self.process_image_pipeline_pair(
@@ -335,6 +352,100 @@ class VQAGenerator:
         for key in image_keys:
             if key in source_a and source_a[key]:
                 return source_a[key]
+        
+        return None
+    
+    def _extract_pipeline_from_record(self, record: Dict[str, Any]) -> Optional[str]:
+        """
+        从记录中提取pipeline信息
+        
+        支持以下字段：
+        - pipeline_type: 如 "object_counting"
+        - pipeline_name: 如 "Object Counting Pipeline"
+        
+        Args:
+            record: 输入记录
+            
+        Returns:
+            pipeline名称（配置文件中使用的名称），如果未找到返回None
+        """
+        # 优先使用pipeline_type（直接对应配置中的pipeline名称）
+        pipeline_type = record.get("pipeline_type")
+        if pipeline_type:
+            # 验证pipeline是否存在
+            available_pipelines = self.config_loader.list_pipelines()
+            if pipeline_type in available_pipelines:
+                return pipeline_type
+            else:
+                print(f"[WARNING] pipeline_type '{pipeline_type}' 不在可用pipeline列表中，可用: {available_pipelines}")
+        
+        # 如果没有pipeline_type，尝试从pipeline_name映射
+        pipeline_name = record.get("pipeline_name")
+        if pipeline_name:
+            # 将pipeline_name映射到pipeline_type
+            # 例如: "Object Counting Pipeline" -> "object_counting"
+            pipeline_mapping = self._map_pipeline_name_to_type(pipeline_name)
+            if pipeline_mapping:
+                return pipeline_mapping
+        
+        # 也可以从source_a或source_b中查找
+        source_a = record.get("source_a", {})
+        if source_a:
+            pipeline_type = source_a.get("pipeline_type")
+            if pipeline_type:
+                available_pipelines = self.config_loader.list_pipelines()
+                if pipeline_type in available_pipelines:
+                    return pipeline_type
+        
+        source_b = record.get("source_b", {})
+        if source_b:
+            pipeline_type = source_b.get("pipeline_type")
+            if pipeline_type:
+                available_pipelines = self.config_loader.list_pipelines()
+                if pipeline_type in available_pipelines:
+                    return pipeline_type
+        
+        return None
+    
+    def _map_pipeline_name_to_type(self, pipeline_name: str) -> Optional[str]:
+        """
+        将pipeline_name映射到pipeline_type
+        
+        Args:
+            pipeline_name: Pipeline名称（如 "Object Counting Pipeline"）
+            
+        Returns:
+            pipeline_type（如 "object_counting"），如果无法映射返回None
+        """
+        # 获取所有pipeline配置
+        available_pipelines = self.config_loader.list_pipelines()
+        
+        # 尝试精确匹配
+        for pipeline_type in available_pipelines:
+            pipeline_config = self.config_loader.get_pipeline_config(pipeline_type)
+            if pipeline_config:
+                config_name = pipeline_config.get("name", "")
+                if config_name == pipeline_name:
+                    return pipeline_type
+        
+        # 尝试模糊匹配（基于关键词）
+        pipeline_name_lower = pipeline_name.lower()
+        name_mapping = {
+            "object counting": "object_counting",
+            "object recognition": "question",
+            "question": "question",
+            "object position": "object_position",
+            "object proportion": "object_proportion",
+            "object orientation": "object_orientation",
+            "object absence": "object_absence",
+            "place recognition": "place_recognition",
+            "text association": "text_association",
+            "caption": "caption"
+        }
+        
+        for key, pipeline_type in name_mapping.items():
+            if key in pipeline_name_lower and pipeline_type in available_pipelines:
+                return pipeline_type
         
         return None
     

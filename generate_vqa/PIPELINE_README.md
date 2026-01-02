@@ -24,7 +24,7 @@ python generate_vqa/pipeline.py input.json output_dir/
 ```bash
 # 指定pipeline和样本数
 python generate_vqa/pipeline.py /home/zhuxuzhou/test_localization/object_localization/final_output.json vqa_output_dir/ \
-    --pipelines object_recognition object_counting \
+    --pipelines question object_counting \
     -n 10
 
 # 指定配置文件
@@ -92,8 +92,8 @@ output_dir/
   },
   "correct_option": "B",
   "explanation": "图片中显示的是...",
-  "pipeline_name": "object_recognition",
-  "pipeline_intent": "object_recognition",
+  "pipeline_name": "question",
+  "pipeline_intent": "question",
   "answer_type": "single_label",
   "validation_passed": true,
   "validation_score": 0.95,
@@ -111,7 +111,7 @@ output_dir/
     "fill_in_blank": 300
   },
   "by_pipeline": {
-    "object_recognition": 200,
+    "question": 200,
     "object_counting": 150,
     ...
   },

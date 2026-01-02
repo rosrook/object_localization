@@ -52,7 +52,7 @@ python generate_vqa/generate_answer/main.py questions.json answers.json -n 100
   "question": "Which term best matches the picture?",
   "question_type": "multiple_choice",
   "image_base64": "base64编码的图片数据",
-  "pipeline_name": "object_recognition",
+  "pipeline_name": "question",
   "id": 123,
   ...
 }
@@ -82,7 +82,7 @@ python generate_vqa/generate_answer/main.py questions.json answers.json -n 100
     "D": "motorcycle"
   },
   "correct_option": "B",
-  "pipeline_name": "object_recognition",
+  "pipeline_name": "question",
   "id": 123,
   "generated_at": "2024-01-01T12:00:00"
 }
